@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "sql-assistant"  # Название проекта
+version = "0.1.0"  # Версия проекта
+description = ""  # Описание проекта
+authors = ["Артем Проценко <artpropy@gmail.com>"]  # Авторы проекта
+readme = "README.md"  # Путь к файлу README
+
+[tool.poetry.dependencies]
+python = "^3.12"  # Версия Python
+SQLAlchemy = "==2.0.30"  # Работа с БД
+loguru = "==0.7.2"  # Логи
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 85
+skip-string-normalization = true
+
+[tool.isort]
+profile = 'black'
+line_length = 85
+multi_line_output = 3
+
+[tool.ruff]
+target-version = 'py312'        # Min version python
+line-length = 85                # Allow lines to be as long as 85 characters.
+show-fixes = true               # Enumerate all fixed violations.
+cache-dir = '~/.cache/ruff'
+
+output-format = 'grouped'              # Format of displayed text in the console
+
+[tool.ruff.lint]
+select = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'N', 'Q', 'S', 'T', 'W', 'ANN', 'ARG', 'COM', 'DJ', 'DTZ', 'EM', 'ERA', 'EXE', 'FBT', 'ICN', 'INP', 'ISC', 'NPY', 'PD', 'PGH', 'PIE', 'PL', 'PT', 'PTH', 'PYI', 'RET', 'RSE', 'RUF', 'SIM', 'TCH', 'TID', 'TRY', 'UP', 'YTT']
+ignore = ['ANN001', 'ANN002', 'ANN003', 'ANN101', 'ANN102', 'ANN201', 'B006', 'B008', 'COM812', 'D202', 'D203', 'D205', 'D212', 'DJ007', 'DTZ003', 'DTZ005', 'DTZ007', 'I001', 'INP001', 'N805', 'ISC001', 'Q000', 'Q003', 'RUF001', 'RUF002', 'RUF003', 'RUF012', 'S101', 'S311', 'PLR0913', 'E712']
+task-tags = ['TODO']
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "..",
+]
+asyncio_mode="auto"
+
+[tool.pytest]
+addopts = "--cov=course --cov-report html"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
