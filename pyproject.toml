@@ -1,14 +1,15 @@
 [tool.poetry]
 name = "sql-assistant"  # Название проекта
-version = "0.1.0"  # Версия проекта
-description = ""  # Описание проекта
+version = "0.1.1"  # Версия проекта
+description = "Проект по помищи работы с объектами из БД."  # Описание проекта
 authors = ["Артем Проценко <artpropy@gmail.com>"]  # Авторы проекта
 readme = "README.md"  # Путь к файлу README
 
 [tool.poetry.dependencies]
-python = "^3.12"  # Версия Python
+python = "^3.11"  # Версия Python
 SQLAlchemy = "==2.0.30"  # Работа с БД
 loguru = "==0.7.2"  # Логи
+asyncpg = "==0.30.0"  # Работа с асинхронными запросами к PostgreSQL
 
 
 [build-system]
@@ -25,7 +26,7 @@ line_length = 85
 multi_line_output = 3
 
 [tool.ruff]
-target-version = 'py312'        # Min version python
+target-version = 'py311'        # Min version python
 line-length = 85                # Allow lines to be as long as 85 characters.
 show-fixes = true               # Enumerate all fixed violations.
 cache-dir = '~/.cache/ruff'
