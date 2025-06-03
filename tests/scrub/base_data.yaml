@@ -1,0 +1,30 @@
+users:
+  - _id: 101
+    username: user1@q.q
+    password: pass1
+    name: user1
+
+  - _id: 102
+    username: user2@q.q
+    password: pass2
+    name: user2
+
+  - _id: 201
+    username: admin1@q.q
+    password: pass3
+    name: admin1
+
+  - _id: 202
+    username: admin2@q.q
+    password: pass4
+    name: admin2
+
+  - _id: 203
+    username: t_user1@q.q
+    password: pass5
+    name: t_user1
+
+  - _id: 204
+    username: t_user2@q.q
+    password: pass6
+    name: t_user2

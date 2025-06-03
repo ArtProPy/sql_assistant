@@ -1,0 +1,15 @@
+test_get_obj:
+  - name: 1.1 Get 101 user
+    user:
+      id: 101
+    result:
+      id: 101
+      is_delete: false
+      name: user1
+      username: user1@q.q
+      password: pass1
+
+  - name: 1.2 Get 100 user
+    user:
+      id: 100
+    result:
