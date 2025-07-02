@@ -1,10 +1,12 @@
 """Работа с БД."""
 
 import contextlib
+import re
 import sys
 
 import loguru
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -23,7 +25,7 @@ class Storage:
         :param log: объект логирования
         """
 
-        self.validate(log=log, base=base, async_session=async_session)
+        self.validate(base=base, async_session=async_session, log=log)
 
     def validate(self, base, async_session, log):
         """Валидация переданных данных."""
@@ -68,7 +70,7 @@ class Storage:
 
         if not is_base:
             msg = 'Не был передан `Base` проекта!'
-            self.log.error(msg)
+            self.log.exception(msg)
         else:
             self.__base = base
 
@@ -81,7 +83,7 @@ class Storage:
 
         if not is_async_session:
             msg = 'Не был передан `async_session` проекта!'
-            self.__log.error(msg)
+            self.__log.exception(msg)
         else:
             self.__async_session = async_session
 
@@ -102,6 +104,7 @@ class Storage:
 
 class SqlAssistant(Storage):
     """Класс-помощник работы с БД."""
+
     # == Декораторы класса ==========================================================
     @staticmethod
     def check_session_param(func):
@@ -141,14 +144,15 @@ class SqlAssistant(Storage):
         return wrapper
 
     # == Запросы в БД ===============================================================
+    # = Select запросы ==============================================================
     @check_session_param
     @check_error
     async def get_obj(self, db, id_: int, session=None):
         """
-        Возвращает объект.
+        Возвращает объект по id.
 
-        :param id_: id объекта
         :param db: класс таблицы, из которой необходимо получить объект
+        :param id_: id объекта
         :param session: сессия работы с БД
 
         :raise Exception: программная ошибка
@@ -163,7 +167,7 @@ class SqlAssistant(Storage):
 
         except Exception as exp:
             msg = str(exp)
-            self.log.error(msg)
+            self.log.exception(msg)
 
             await session.rollback()
             raise exp
@@ -188,12 +192,13 @@ class SqlAssistant(Storage):
         Возвращает все экземпляры переданного класса.
 
         :param db: класс таблицы из которой необходимо получить данные
-        :param where: условия фильтрации
+        :param where: условия выборки
         :param order_by: параметры сортировки
         :param group_by: параметры группировки
         :param join_lst: список джойнов
         :param aggregate: словарь с агрегатными функциями
         :param fields: поля для выборки
+        :param session: сессия работы с БД
 
         :return: список экземпляров
         """
@@ -206,8 +211,7 @@ class SqlAssistant(Storage):
                 for data in join_lst:
                     if data.get('onclause'):
                         if data.get('type') == 'left':
-                            query = query.outerjoin(data['target'],
-                                                    data['onclause'])
+                            query = query.outerjoin(data['target'], data['onclause'])
                         else:
                             query = query.join(data['target'], data['onclause'])
                     elif data.get('type') == 'left':
@@ -242,3 +246,94 @@ class SqlAssistant(Storage):
                 msg += f'{[x.id for x in result]}'
             self.log.debug(msg)
             return result
+
+    # = Update запросы ==============================================================
+    @check_session_param
+    @check_error
+    async def update_objs(self, db, data: dict, where: list = None, session=None):
+        """
+        Обновляет данные в таблице базы данных.
+
+        :param db: класс таблицы, в которой необходимо обновить данные
+        :param data: новые данные
+        :param where: условия выборки
+        :param session: сессия работы с БД
+
+        :return: Количество обновлённых данных
+        """
+
+        where = where if where else []
+
+        try:
+            query = update(db).where(*where).values(**data)
+
+            result = await session.execute(query)
+            await session.commit()
+
+            # Получаем количество обновленных строк
+            updated_count = result.rowcount
+        except Exception:
+            msg = f'Не удалось обновить данные для таблицы `{db.__name__}` `{data=}`'
+            self.log.exception(msg)
+
+            await session.rollback()
+            raise
+        else:
+            msg = (
+                f'Обновлены данные для таблицы `{db.__name__}`. Новые данные '
+                f'`{data}`'
+            )
+            self.log.debug(msg)
+            return updated_count  # Возвращаем количество обновленных строк
+
+    @check_session_param
+    @check_error
+    async def create_or_update(self, db, data: dict, where: dict, session=None):
+        """
+        Создает или обновляет запись в таблице базы данных.
+
+        :param db: класс таблицы, в которую необходимо добавить или обновить данные
+        :param data: данные объекта
+        :param where: условия выборки
+        :param session: сессия работы с БД
+
+        :return: объект созданных или обновленных данных
+        """
+
+        try:
+            query = select(db).where(*where)
+            result = await session.execute(query)
+
+            instance = result.scalars().first()
+
+            if instance:
+                for key, value in data.items():
+                    setattr(instance, key, value)
+                msg = 'Обновлён'
+            else:
+                instance = db(**data)
+                session.add(instance)
+                msg = 'Создан'
+
+            await session.commit()
+
+        except Exception as exp:
+            await session.rollback()
+
+            if str(exp).find('отсутствует в таблице') != -1:
+                msg = (
+                    f'Не был найден объект `{db}`, с которым необходимо '
+                    f'сделать связь. `{re.findall("Ключ .+", str(exp))[0]}`'
+                )
+
+            if isinstance(exp, IntegrityError):
+                msg = f'Объект `{db}` с данными `{data}` уже существует!'
+
+            self.log.exception(msg)
+
+            raise
+        else:
+            msg += f' `{db.__name__}` с данными `{data}`'
+            self.log.debug(msg)
+
+            return instance

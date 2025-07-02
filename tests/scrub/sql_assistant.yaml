@@ -13,3 +13,19 @@ test_get_obj:
     user:
       id: 100
     result:
+
+
+test_update_objs:
+  - name: 1.1 update 101 user
+    user:
+      id: 101
+    data:
+      name: new_name
+    expected_result:
+      num: 1
+      new_users:
+      - id: 101
+        is_delete: false
+        name: new_name
+        username: user1@q.q
+        password: pass1

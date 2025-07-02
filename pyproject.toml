@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "sql-assistant"  # Название проекта
-version = "0.1.1"  # Версия проекта
+version = "0.1.2"  # Версия проекта
 description = "Проект по помищи работы с объектами из БД."  # Описание проекта
 authors = ["Артем Проценко <artpropy@gmail.com>"]  # Авторы проекта
 readme = "README.md"  # Путь к файлу README
 
 [tool.poetry.dependencies]
 python = "^3.11"  # Версия Python
-SQLAlchemy = "==2.0.30"  # Работа с БД
+SQLAlchemy = "2.0.35"  # Работа с БД
 loguru = "==0.7.2"  # Логи
-asyncpg = "==0.30.0"  # Работа с асинхронными запросами к PostgreSQL
+asyncpg = "0.30.0"  # Работа с асинхронными запросами к PostgreSQL
 
 
 [build-system]

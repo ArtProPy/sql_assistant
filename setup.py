@@ -2,18 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='sql_assistant',
-    version='0.1',
+    version='0.1.2',
     packages=find_packages(),
     install_requires=[
-        'SQLAlchemy==2.0.30',  # Работа с БД
+        'SQLAlchemy>=2.0.35',  # Работа с БД
         'loguru==0.7.2',  # Логи
-        'asyncpg==0.30.0',  # Работа с асинхронными запросами к PostgreSQL
-        # Для тестов
-        'pytest==7.4.4',
-        'pytest-asyncio==0.23.6',
-        'pytest_subtests==0.11.0',
-        'httpx==0.25.2',
-        'PyYAML==6.0.1'
+        'asyncpg>=0.30.0',  # Работа с асинхронными запросами к PostgreSQL
     ],
     author='Артем Проценко',
     author_email='artpropy@gmail.com',

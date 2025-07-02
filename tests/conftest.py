@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import AsyncGenerator
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -13,6 +14,7 @@ from tests.test_api.helper import read_test_data_from_yaml
 from tests.test_api.test_db import engine, Base, async_session
 
 base_data = read_test_data_from_yaml('tests/scrub/base_data.yaml')
+mock_log = MagicMock()
 
 
 # Функция для создания идентификаторов
@@ -84,7 +86,7 @@ async def _create_test_users() -> AsyncGenerator:
 
 
 @pytest.fixture(name='sas')
-async def sql_assistant():
+async def sql_assistant() -> SqlAssistant:
     """Возвращает тестовый объект помощника."""
 
-    return SqlAssistant(base=Base, async_session=async_session)
+    return SqlAssistant(base=Base, async_session=async_session, log=mock_log)
