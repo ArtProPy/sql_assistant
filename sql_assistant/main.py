@@ -247,6 +247,45 @@ class SqlAssistant(Storage):
             self.log.debug(msg)
             return result
 
+    # = Create запросы ==============================================================
+    @check_session_param
+    @check_error
+    async def create_obj(self, db, data: dict, session=None):
+        """
+        Создаёт запрос на создание данных в БД.
+
+        :param db: класс таблицы, в которую необходимо добавить данные
+        :param data: данные объекта
+        :param session: сессия работы с БД
+
+        :return: объект созданных данных
+        """
+
+        try:
+            obj = db(**data)  # Создание объекта
+            session.add(obj)
+
+            await session.commit()  # Сохранение объекта в БД
+            await session.refresh(obj)  # Обновление данных в переменной объекта
+        except Exception as exp:
+            await session.rollback()
+
+            if str(exp).find('отсутствует в таблице') != -1:
+                msg = re.findall('Ключ .+', str(exp))[0]
+                msg += f' Не удалось создать объект с данными {data}'
+                raise Exception(msg)
+
+            if isinstance(exp, IntegrityError):
+                msg = f'Создаваемый объект с данными `{data}` уже существует!'
+                raise Exception(msg)
+
+            raise
+        else:
+            msg = f'Создан новый `{db.__name__}` с данными `{data}`'
+            self.log.debug(msg)
+
+            return obj
+
     # = Update запросы ==============================================================
     @check_session_param
     @check_error

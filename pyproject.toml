@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sql-assistant"  # Название проекта
-version = "0.1.2"  # Версия проекта
+version = "0.1.3"  # Версия проекта
 description = "Проект по помищи работы с объектами из БД."  # Описание проекта
 authors = ["Артем Проценко <artpropy@gmail.com>"]  # Авторы проекта
 readme = "README.md"  # Путь к файлу README
